@@ -1,0 +1,8 @@
+# Generated password outputs
+saved_passwords.txt
+passwords_report.txt
+passwords_report.html
+
+# OS junk
+*.log
+*.tmp
