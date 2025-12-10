@@ -1,6 +1,5 @@
 import random
 import string
-import csv
 import os
 from datetime import datetime
 
@@ -36,7 +35,6 @@ def password_score(pwd):
         any(c.isdigit() for c in pwd),
         any(c in string.punctuation for c in pwd)
     ])
-    # Simple scoring: length + categories
     score = min(length + categories * 2, 10)
     return score
 
@@ -51,18 +49,37 @@ def strength_label(score):
 def backup_file(filename):
     if os.path.exists(filename):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        os.rename(filename, f"{filename.replace('.csv','')}_backup_{timestamp}.csv")
+        os.rename(filename, f"{filename.replace('.html','')}_backup_{timestamp}.html")
 
-def save_passwords_csv(passwords, filename="passwords_report.csv"):
+def save_html_report(passwords, filename="passwords_report.html"):
     backup_file(filename)
-    with open(filename, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["No.", "Password", "Score", "Strength"])
-        for i, pwd in enumerate(passwords, 1):
-            score = password_score(pwd)
-            strength = strength_label(score)
-            writer.writerow([i, pwd, score, strength])
-    print(f"\nCSV report saved to {filename}")
+    html_content = f"""
+    <html>
+    <head>
+        <title>Password Report</title>
+        <style>
+            table {{ border-collapse: collapse; width: 80%; margin: 20px auto; }}
+            th, td {{ border: 1px solid #333; padding: 8px; text-align: center; }}
+            th {{ background-color: #222; color: white; }}
+            .Weak {{ background-color: #f44336; color: white; }}
+            .Medium {{ background-color: #ff9800; color: white; }}
+            .Strong {{ background-color: #4caf50; color: white; }}
+        </style>
+    </head>
+    <body>
+        <h2 style="text-align:center;">Password Report</h2>
+        <table>
+            <tr><th>No.</th><th>Password</th><th>Score</th><th>Strength</th></tr>
+    """
+    for i, pwd in enumerate(passwords, 1):
+        score = password_score(pwd)
+        strength = strength_label(score)
+        html_content += f"<tr><td>{i}</td><td>{pwd}</td><td>{score}</td><td class='{strength}'>{strength}</td></tr>\n"
+    html_content += "</table></body></html>"
+
+    with open(filename, "w") as f:
+        f.write(html_content)
+    print(f"\nHTML report saved to {filename}")
 
 if __name__ == "__main__":
     try:
@@ -106,7 +123,7 @@ if __name__ == "__main__":
 
     passwords = [generate_password(length, chars, strong) for _ in range(num_passwords)]
 
-    # Display table
+    # Display table in terminal
     print("\n{:<5} {:<20} {:<6} {:<8}".format("No.", "Password", "Score", "Strength"))
     print("-" * 45)
     for i, pwd in enumerate(passwords, 1):
@@ -114,7 +131,7 @@ if __name__ == "__main__":
         strength = strength_label(score)
         print("{:<5} {:<20} {:<6} {:<8}".format(i, pwd, score, strength))
 
-    # Save to CSV
-    save_passwords_csv(passwords)
+    # Save HTML report
+    save_html_report(passwords)
 
     input("\nPress Enter to exit...")
