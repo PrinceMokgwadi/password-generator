@@ -6,3 +6,4 @@ passwords_report.html
 # OS junk
 *.log
 *.tmp
+pwgen_princ.egg-info/
